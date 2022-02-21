@@ -1,14 +1,10 @@
 <template>
-  <data-table
-        :loader="loadData"
-        :headers="headers"
-        title="Users"
-        :allow-add="false"
-    />
+  <DataTable :allow_add="false" tableName="Users" :columns="headers" :dataList="dataList" />
 </template>
 
 <script>
 import DataTable from '@/components/DataTable'
+import UserService from '@/services/UserService'
 
 export default {
     name: "Users",
@@ -19,40 +15,21 @@ export default {
         return {
             headers: [
                 {
-                    text: 'Display Name',
-                    value: 'username',
+                    text: 'Name',
+                    value: 'first_name',
                 },
                 {
-                    text: 'Subscription',
-                    value: 'subscription',
-                },
-                {
-                    width: 120,
                     text: 'Is Verified',
                     value: 'is_verified',
-                    sortable: false
-                },
-                {
-                    width: 120,
-                    text: 'Premium Trial',
-                    value: 'premium_trial',
-                    sortable: false
-                },
-                {
-                    width: 120,
-                    text: 'Actions',
-                    value: 'actions',
-                    sortable: false
                 },
             ],
+            dataList: [],
         }
     },
-    methods:{
-        async loadData(){
-            const result = await users.get()
-            this.items = result.data
-            return result.data
-        }
+    async beforeCreate() {
+        const response = await UserService.getUsers()
+        console.log(response.data)
+        this.dataList = response.data
     }
 
 }

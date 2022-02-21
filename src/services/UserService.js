@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const appCLient = axios.create({
-    baseURL:'https://my-json-server.typicode.com/AbdulMuqeet13/vue_demo_2',
+const apiCLient = axios.create({
+    baseURL:'http://192.168.100.212:3000/',
     withCredentials:false,
     headers:{
         Accept: 'application/json',
@@ -11,6 +11,9 @@ const appCLient = axios.create({
 
 export default{
     getUsers(){
-        return apiclient.get('/persons')
+        return apiCLient.get('persons')
+    },
+    getCustomers(){
+        return apiCLient.get('persons')
     }
 }
