@@ -28,7 +28,6 @@ export default {
     },
     async beforeCreate() {
         const response = await UserService.getUsers()
-        console.log(response.data)
         this.dataList = response.data
     }
 

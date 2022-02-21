@@ -1,5 +1,5 @@
 <template>
-    <DataTable :allow_add="false" tableName="Customers" :columns="headers" :dataList="dataList" />
+    <DataTable :allow_add="false" tableName="Customers" :columns="headers" :dataList="dataList" actions="approve" />
 </template>
 
 <script>
@@ -27,8 +27,7 @@ export default {
         }
     },
     async beforeCreate() {
-        const response = await UserService.getCustomers()
-        console.log(response.data)
+        const response = await UserService.getCustomers() 
         this.dataList = response.data
     }
 
