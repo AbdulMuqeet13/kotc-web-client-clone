@@ -8,6 +8,8 @@
         <v-app-bar-nav-icon style="color: white; background: transparent" @click="drawer = !drawer"></v-app-bar-nav-icon>
 
         <v-toolbar-title class="ml-10 title">Dashboard</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn @click="logout">Logout</v-btn>
       </v-app-bar>
       <v-navigation-drawer
           v-model="drawer"
@@ -35,6 +37,7 @@
 
 <script>
 
+
 export default {
   name: 'Dashboard',
   data: () => ({
@@ -42,6 +45,10 @@ export default {
     loading: false,
   }),
   methods: {
+    logout(){
+      localStorage.removeItem('token')
+      this.$router.push('/auth/sign-in')
+    }
   },
   computed: {
     routes() {

@@ -4,28 +4,32 @@
       <!-- <img src="../../assets/logo_alt.png" alt="Logo" class="sign-in__logo"/> -->
       <h1>LOGO</h1>
       <h1 class="sign-in__title">Authenticate yourself</h1>
-      <v-form ref="form">
-        <v-text-field
-            v-model="username"
-            label="Your Email"
-            outlined
-            :rules="[required(), email()]"
+      <v-form @submit="signIn">
+        <BaseInput v-model="username" label="Your Email" :error="errors.username"/>
+        <BaseInput v-model="password" type="password" label="Your Password" :error="errors.password"/>
+        <!-- <v-text-field
+          class="text-field"
+          v-model="username"
+          label="Your Email"
+          outlined
+          :rules="[required(), email()]"
         />
         <v-text-field
-            v-model="password"
-            rules="[required('Do not leave this field empty')]"
-            @keypress.enter="signIn"
-            label="Your Password"
-            type="password"
-            outlined
-        />
+          class="text-field"
+          v-model="password"
+          rules="[required('Do not leave this field empty')]"
+          @keypress.enter="signIn"
+          label="Your Password"
+          type="password"
+          outlined
+        /> -->
 
         <v-btn
-            @click="signIn"
-            class="submit_btn"
-            elevation="0"
-            width="100%"
-            height="45px"
+          type="submit"
+          class="submit_btn"
+          elevation="0"
+          width="100%"
+          height="45px"
         >
           Authenticate
           <v-icon small style="margin-left: 5px">mdi-arrow-right</v-icon>
@@ -33,7 +37,7 @@
       </v-form>
     </v-card>
     <loading-dialog v-model="loading" message="You are being authenticated, Please wait..."/>
-    <error-dialog v-model="error" :error="errorVal"/>
+    <error-dialog @value="closeError" v-model="error" :error="errorVal"/>
   </div>
 </template>
 
@@ -41,49 +45,58 @@
 import {required, email} from '@/utils/validators';
 import LoadingDialog from '../../components/LoadingDialog';
 import ErrorDialog from '../../components/ErrorDialog';
+import BaseInput from '@/components/BaseInput'
+import { useField, useForm } from 'vee-validate';
+import AuthService from '@/services/AuthService'
 
 export default {
   name: 'SignIn',
-  components: {ErrorDialog, LoadingDialog},
+  components: {ErrorDialog, LoadingDialog, BaseInput},
 
   data: () => ({
     error: false,
     errorVal: {},
     loading: false,
-    username: '',
-    password: ''
   }),
-
-  methods: {
-    email,
-    required,
-    async signIn() {
-      if (this.$refs.form.validate()) {
-        this.loading = true;
-        try {
-          const token = (
-              await this.$axios.post('/auth/login', {
-                username: this.username,
-                password: this.password
-              })
-          ).data;
-          const user = (await this.$axios.get('/auth/user', {
-            headers: {authorization: 'bearer ' + token.token}
-          })).data;
-          localStorage.setItem('auth_token', token.token)
-          localStorage.setItem('auth_user', JSON.stringify(user))
-          await this.$router.push('/').then(() => this.$router.go())
-        } catch (e) {
-          this.error = true;
-          this.errorVal = {
-            title: 'Error while signing in',
-            description: 'Email or Password incorrect!'
-          };
-          this.loading = false;
+  setup(){
+        const schema={
+            username: email,
+            password: required,
         }
+        const {errors}=useForm({validationSchema:schema})
+        const {value:username}=useField('username')
+        const {value:password}=useField('password')
 
+        return {
+            username,
+            password,
+            errors,
+        }
+    },
+  methods: {
+    async signIn() {
+      this.loading = true;
+      try {
+        let data = {
+              username: this.username,
+              password: this.password
+            }
+        await AuthService.signIn(data)
+        const user = await AuthService.getProfile()
+        this.$router.push('/')
+      } catch (e) {
+        console.log(e)
+        this.error = true;
+        this.errorVal = {
+          title: 'Error while signing in',
+          description: 'Email or Password incorrect!'
+        };
         this.loading = false;
       }
+      this.loading = false;
+    },
+    closeError(){
+      this.error = false
     }
   }
 };
@@ -133,5 +146,9 @@ export default {
 <style>
 html {
   overflow-y: auto;
+}
+.text-field{
+  height: 30px;
+  margin: 10px 0px;
 }
 </style>

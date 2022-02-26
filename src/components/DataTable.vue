@@ -1,21 +1,25 @@
 <template>
     <div class="d-flex justify-center align-center" style="height: 100%">
-      <v-card class="datatable">
-        <router-link v-if="allow_add" :to="{name: 'Add'+tableName}"><button class="add-new" type="button"> Add New {{ tableName }} </button></router-link>
-    <v-table fixed-header height="80vh">
+      <v-card elevation="10" class="datatable">
+        <div class="d-flex ma-5">
+          <span class="title ml-3">{{ tableName }}</span>
+          <v-spacer></v-spacer>
+          <v-btn v-if="allow_add" @click="this.$emit('addNew')" color="green" text-color="white" type="button"> Add New {{ tableName }} </v-btn>
+        </div>
+    <v-table class="px-5" fixed-header height="80vh">
         <thead>
           <tr>
             <th v-for="(column, index) in columns" :key="index" >{{ column.text }}</th>
-            <th>Actions</th>
+            <th v-if="actions">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(data, index) in list" :key="index">
             <td v-for="(head, index) in columns" :key="index">{{ data[head.value] }}</td>
             <td>
-                <v-btn v-if="actions.includes('approve')" @click="this.$emit()" elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: green">mdi-check-circle</v-icon></v-btn>
-                <v-btn v-if="actions.includes('edit')"  elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: green">mdi-pencil</v-icon></v-btn>
-                <v-btn v-if="actions.includes('delete')"  elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: red">mdi-delete</v-icon></v-btn>
+                <v-btn v-if="actions.includes('approve')" @click="this.$emit('updateApproval', data)" elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: green">mdi-check-circle</v-icon></v-btn>
+                <v-btn v-if="actions.includes('edit')"  @click="this.$emit('update', data)" elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: green">mdi-pencil</v-icon></v-btn>
+                <v-btn v-if="actions.includes('delete')" @click="this.$emit('delete', data)"  elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: red">mdi-delete</v-icon></v-btn>
             </td>
           </tr>
         </tbody>
@@ -63,26 +67,20 @@ export default {
 }
 </script>
 
-<style>
-.fa-pencil-alt{
-    color:blue
-}
-.fa-trash{
-    color: crimson;
-    margin-left: 20px;
-}
-.fas{
-    cursor: pointer;
-}
+<style scoped>
+
 .datatable{
     width: 80%;
-}
-.add-new{
-    margin-left: 80%;
-    background: #222;
     border-radius: 10px;
-    color: #fff;
-    padding: 10px;
-    cursor: pointer;
 }
+.title{
+  font-size: 25px;
+  font-family: google-sans, sans-serif;
+  font-weight: 500;
+  font-weight: 500;
+  letter-spacing: 0.0125em;
+  line-height: 2rem;
+  word-break: break-all;
+}
+
 </style>

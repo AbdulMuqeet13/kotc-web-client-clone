@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :value="flag" @input="$emit('value', false)" width="470">
+  <v-dialog :value="flag" @input="$emit('value', false)">
     <v-card style="padding: 10px 0">
       <v-card-title style="font-family: google-sans, sans-serif; font-size: 24px">
         {{ error.title }}
