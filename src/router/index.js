@@ -6,6 +6,8 @@ import Users from '@/views/users/Users'
 import Notifications from '@/views/notifications/Notifications'
 import NotificationForm from '@/views/notifications/NotificationForm'
 import UserForm from '@/views/users/UserForm'
+import CampaignStats from '@/views/campaigns/CampaignStats'
+import Companies from '@/views/companies/Companies'
 
 const routes = [
   {
@@ -31,6 +33,14 @@ const routes = [
   {
     path: '/notification-form',
     component: NotificationForm 
+  },
+  {
+    path: '/campaigns-stats',
+    component: CampaignStats 
+  },
+  {
+    path: '/companies',
+    component: Companies 
   },
   {
     path: '/auth/sign-in',

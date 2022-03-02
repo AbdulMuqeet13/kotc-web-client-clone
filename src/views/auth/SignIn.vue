@@ -1,28 +1,12 @@
 <template>
   <div id="background">
     <v-card class="sign-in" elevation="10">
-      <!-- <img src="../../assets/logo_alt.png" alt="Logo" class="sign-in__logo"/> -->
       <h1>LOGO</h1>
       <h1 class="sign-in__title">Authenticate yourself</h1>
       <v-form @submit="signIn">
         <BaseInput v-model="username" label="Your Email" :error="errors.username"/>
         <BaseInput v-model="password" type="password" label="Your Password" :error="errors.password"/>
-        <!-- <v-text-field
-          class="text-field"
-          v-model="username"
-          label="Your Email"
-          outlined
-          :rules="[required(), email()]"
-        />
-        <v-text-field
-          class="text-field"
-          v-model="password"
-          rules="[required('Do not leave this field empty')]"
-          @keypress.enter="signIn"
-          label="Your Password"
-          type="password"
-          outlined
-        /> -->
+        
 
         <v-btn
           type="submit"
@@ -48,7 +32,6 @@ import ErrorDialog from '../../components/ErrorDialog';
 import BaseInput from '@/components/BaseInput'
 import { useField, useForm } from 'vee-validate';
 import AuthService from '@/services/AuthService'
-
 export default {
   name: 'SignIn',
   components: {ErrorDialog, LoadingDialog, BaseInput},
@@ -67,6 +50,8 @@ export default {
         const {value:username}=useField('username')
         const {value:password}=useField('password')
 
+        
+
         return {
             username,
             password,
@@ -82,7 +67,7 @@ export default {
               password: this.password
             }
         await AuthService.signIn(data)
-        const user = await AuthService.getProfile()
+        await AuthService.getProfile()
         this.$router.push('/')
       } catch (e) {
         console.log(e)
@@ -136,10 +121,11 @@ export default {
   display: flex
   align-items: center
   justify-content: center
-  background: #9431FE
+  background: rgb(139,95,92)
+  background: linear-gradient(to bottom right, #79201C, #904B46)
 
 .submit_btn
-    background-color: #9431FE !important
+    background-color: #904B46 !important
     color:#fff
 </style>
 

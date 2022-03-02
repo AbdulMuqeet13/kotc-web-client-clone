@@ -1,0 +1,20 @@
+.btn-primary{
+    background-color: #904B46;
+    color: #fff;
+}
+.btn-primary:hover{
+    background-color:#048F90;
+    transition: ease-in-out 0.25s;
+}
+.logout-btn{
+    background-color: transparent;
+    color: #fff;
+}
+.drawer-heading {
+    color: #904B46;
+    font-size: 18px;
+    position: absolute;
+    top: -40px;
+    left: 15px;
+    text-transform: capitalize;
+}

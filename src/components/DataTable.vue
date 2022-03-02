@@ -4,22 +4,29 @@
         <div class="d-flex ma-5">
           <span class="title ml-3">{{ tableName }}</span>
           <v-spacer></v-spacer>
-          <v-btn v-if="allow_add" @click="this.$emit('addNew')" color="green" text-color="white" type="button"> Add New {{ tableName }} </v-btn>
+          <v-btn v-if="allow_add" @click="this.$emit('addNew')" color="#904B46" text-color="white" type="button"> Add New {{ tableName }} </v-btn>
         </div>
     <v-table class="px-5" fixed-header height="80vh">
         <thead>
           <tr>
+            <th v-if="badge">Badge</th>
             <th v-for="(column, index) in columns" :key="index" >{{ column.text }}</th>
-            <th v-if="actions">Actions</th>
+            <th v-if="actions != 'none'"><div class="d-flex"><v-spacer></v-spacer><span>Actions</span></div></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(data, index) in list" :key="index">
+            <td v-if="badge"><v-icon size="30" v-if="data.badge" :color="data.badgeColor">{{ data.badge }}</v-icon></td>
             <td v-for="(head, index) in columns" :key="index">{{ data[head.value] }}</td>
             <td>
+              <div class="d-flex">
+                <v-spacer></v-spacer>
+                <v-btn v-if="actions.includes('view_details')" @click="this.$emit('view_details', data)" elevation="0" class="bg-transparent mr-2" size="xx-small"><v-icon size="small" >mdi-eye</v-icon></v-btn>
                 <v-btn v-if="actions.includes('approve')" @click="this.$emit('updateApproval', data)" elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: green">mdi-check-circle</v-icon></v-btn>
                 <v-btn v-if="actions.includes('edit')"  @click="this.$emit('update', data)" elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: green">mdi-pencil</v-icon></v-btn>
                 <v-btn v-if="actions.includes('delete')" @click="this.$emit('delete', data)"  elevation="0" class="bg-transparent" size="xx-small"><v-icon size="small" style="color: red">mdi-delete</v-icon></v-btn>
+              </div>
+                
             </td>
           </tr>
         </tbody>
@@ -29,7 +36,6 @@
 </template>
 
 <script>
-// import EventService from '@/services/EventService'
 
 export default {
   name: 'Datatable',
@@ -51,8 +57,12 @@ export default {
         default: true
       },
       actions: {
-        type: String,
-        default: ''
+        type: Array,
+        required: true
+      },
+      badge: {
+        Type: Array,
+        default: false 
       }
   },
   computed: {

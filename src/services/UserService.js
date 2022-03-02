@@ -1,31 +1,25 @@
-import axios from 'axios'
-
-const apiCLient = axios.create({
-    baseURL:'http://192.168.100.212:3000/',
-    withCredentials:false,
-    headers:{
-        Accept: 'application/json',
-        'Content-Type':'application/json'
-    }
-})
+import apiClient from './apiClient' 
 
 export default{
     getUsers(){
-        return apiCLient.get('persons')
+        return apiClient.get('persons')
     },
     getUser(id){
-        return apiCLient.get('persons/'+id)
+        return apiClient.get('persons/'+id)
     },
     addUser(data){
-        return apiCLient.post('persons/create-user',data)
+        return apiClient.post('persons/create-user',data)
     },
     updateUser(id, data){
-        return apiCLient.patch('persons/'+id, data)
+        return apiClient.patch('persons/'+id, data)
     },
     getCustomers(){
-        return apiCLient.get('persons')
+        return apiClient.get('persons/all-customers')
+    },
+    getCompanies(user_id){
+        return apiClient.get('company/person/'+user_id)
     },
     delete(id){
-        return apiCLient.delete('/persons/'+id)
+        return apiClient.delete('/persons/'+id)
     }
 }

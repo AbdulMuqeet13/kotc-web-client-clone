@@ -8,32 +8,41 @@
     @delete="delete_modal" 
     @addNew="addNew"
     @update="update"
-    :allow_add="true"
+    :allow_add="scope.includes('notification:create')"
     tableName="Notifications"
     :columns="headers"
     :dataList="dataList"
-    actions="edit,delete"
+    :actions="actions"
     />
-
-    <v-dialog v-model="deleteModal">
-        <v-card style="padding: 40px">
-            <p class="span-2 form__title mb-0">You Sure, Want to delete this Item</p>
-            <div class="d-flex justify-space-around">
-                <v-btn @click="deleteNotification" text-color="white" color="red">Yes</v-btn>
-                <v-btn @click="deleteModal = false" text-color="white" color="green">No</v-btn>
-            </div>
-        </v-card>
-    </v-dialog>
+    <DeleteModal message="Sure to delete notification" v-model="deleteModal" @delete="deleteNotification" />
 </template>
 
 <script>
 import DataTable from '@/components/DataTable'
 import NotificationService from '@/services/NotificationService'
+import DeleteModal from '@/components/DeleteModal'
+import {inject} from 'vue'
 
 export default {
     name: "Notifications",
     components:{
         DataTable,
+        DeleteModal
+    },
+    setup(){
+        const scope = inject('scope')
+        var actions = []
+        if (scope.includes("notification:edit")) {
+            actions.push("edit")
+        }
+        if (scope.includes("notification:delete")) {
+            actions.push("delete")
+        }
+
+        return{
+            actions,
+            scope
+        }
     },
     data(){
         return {
@@ -47,7 +56,7 @@ export default {
                     value: 'message',
                 },
             ],
-            user_id: '62131db58a096bd7f39970bb',
+            user_id: JSON.parse(localStorage.getItem('auth_user'))._id,
             notification_id: '',
             del_id: '',
             dataList: [],

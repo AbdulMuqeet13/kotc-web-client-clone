@@ -1,35 +1,68 @@
 .<template>
     <div class="d-flex justify-center my-15" >
-        <v-card style="padding: 40px" elevation="5" width="40vw">
+        <v-card style="padding: 40px" elevation="5" width="50vw">
         <v-form @submit.prevent="UpdateNotification">
         <p class="span-2 form__title mb-0">Notification</p>
         <BaseInput v-model="title" label="Title" :error="errors.title"/>
-        <BaseInput v-model="message" label="Message" :error="errors.message"/>
-        <v-btn
-            style="width: 100%"
-            elevation="0"
-            color="primary"
-            type="Submit"
-        >Submit
-        </v-btn>
+        <BaseTextArea v-model="message" label="Message" :error="errors.message"/>
+        <CheckBoxGroup label="Select Platform" v-model="platform" :items="items" />
+        <div class="d-flex flex-wrap justify-end mt-8">
+            <v-btn
+                elevation="0"
+                color="black"
+                class="ml-2 mt-2"
+                variant="outlined"
+            >Send Only</v-btn>
+            <v-btn
+                elevation="0"
+                class="ml-2 mt-2"
+                color="#904B46"
+                variant="outlined"
+            >Send and Save</v-btn>
+            <v-btn
+                elevation="0"
+                type="Submit"
+                class=" ml-2 mt-2 btn-primary"
+            >Submit
+            </v-btn>
+        </div>
         </v-form>
     </v-card>
+    <loading-dialog v-model="loading" message="Fething Data, Please wait..."/>
     </div>
 </template>
 
 <script>
 import NotificationService from '@/services/NotificationService'
 import BaseInput from '@/components/BaseInput'
+import BaseTextArea from '@/components/BaseTextArea'
+import CheckBoxGroup from '@/components/CheckBoxGroup'
+import LoadingDialog from '@/components/LoadingDialog'
 import { useField, useForm } from 'vee-validate';
 import {required} from "../../utils/validators";
 export default {
     name: "NotificationForm",
     components:{
-        BaseInput
+        BaseInput,
+        BaseTextArea,
+        CheckBoxGroup,
+        LoadingDialog
     },
     data() {
         return {
-            user_id: '62131db58a096bd7f39970bb',
+            user_id: JSON.parse(localStorage.getItem('auth_user'))._id,
+            platform: [],
+            items:[
+                {
+                    label: 'For Android',
+                    value: 'android'
+                },
+                {
+                    label: 'For IOS',
+                    value: 'ios'
+                }
+            ],
+            loading: false
         }
     },
     setup(){
@@ -53,6 +86,7 @@ export default {
             return
         }
         else{
+            this.loading = true
             await NotificationService.getNotification(this.$route.query.id)
                 .then((result) => {
                     this.title = result.data.title
@@ -60,6 +94,7 @@ export default {
                 }).catch((err) => {
                     console.log(err)
                 });
+            this.loading = false
         }
     },
     methods: {

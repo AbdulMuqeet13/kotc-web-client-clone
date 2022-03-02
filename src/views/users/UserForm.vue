@@ -10,35 +10,38 @@
         <BaseInput v-model="username" label="Email" :error="errors.username"/>
         <BaseInput v-model="password" type="password" label="Password" :error="errors.password"/>
         <p class="message">If don't need to update password, Leave it Blank</p>
-        <h4 class="mt-5">Select User Scope</h4>
         <div class="mt-5">
-            <TreeView :items="items" v-model="scope"/>
+            <TreeView label="Select User Scope" v-if="fetchedScopes"  :items="items" v-model="scope"/>
         </div>
-        <v-btn
-            style="width: 100%"
-            elevation="0"
-            color="primary"
-            type="Submit"
-            class="mt-10"
-        >Submit
-        </v-btn>
+        <div class="d-flex">
+            <v-spacer></v-spacer>
+            <v-btn
+                elevation="0"
+                type="Submit"
+                class="mt-10 btn-primary"
+            >Submit
+            </v-btn>
+        </div>
         </v-form>
     </v-card>
+    <loading-dialog v-model="loading" message="Fething Data, Please wait..."/>
     </div>
 </template>
 
 <script>
 import UserService from '@/services/UserService'
 import BaseInput from '@/components/BaseInput'
-import { useField, useForm } from 'vee-validate';
-import {required, email} from "../../utils/validators";
+import LoadingDialog from '@/components/LoadingDialog'
+import { useField, useForm } from 'vee-validate'
+import {required, email} from "../../utils/validators"
 import TreeView from '@/components/TreeView'
 
 export default {
     name: "UserForm",
     components:{
         BaseInput,
-        TreeView
+        TreeView,
+        LoadingDialog
     },
     data() {
         return{
@@ -67,7 +70,42 @@ export default {
                         "Delete"
                     ]
                 },
-            ]
+                {
+                    id: 'companies',
+                    name: 'companies',
+                    checked: false,
+                    children: [
+                        "Create",
+                        "View",
+                        "Edit",
+                        "Delete"
+                    ]
+                },
+                {
+                    id: 'request',
+                    name: 'Request Stats',
+                    checked: false,
+                    children: [
+                        "Create",
+                        "View",
+                        "Edit",
+                        "Delete"
+                    ]
+                },
+                {
+                    id: 'customer',
+                    name: 'Customer',
+                    checked: false,
+                    children: [
+                        "Create",
+                        "View",
+                        "Edit",
+                        "Delete"
+                    ]
+                },
+            ],
+            loading: false,
+            fetchedScopes: false
         }
     },
     setup(){
@@ -88,22 +126,25 @@ export default {
             errors,
         }
     },
-    async mounted() {
+    async beforeMount() {
         if (!this.$route.query.id) {
+            this.fetchedScopes = true
             return
         }
         else{
-            await UserService.getUser(this.$route.query.id)
-                .then((result) => {
-                    this.username = result.data.username
-                    this.password = result.data.password
-                    this.first_name = result.data.first_name
-                    this.last_name = result.data.last_name
-                    this.scope = result.data.scopes
-                    console.log(result.data)
-                }).catch((err) => {
+            this.loading = true
+            this.haeding = 'Update'
+            var result = await UserService.getUser(this.$route.query.id)
+                .catch((err) => {
                     console.log(err)
                 });
+            this.username = result.data.username
+            this.password = result.data.password
+            this.first_name = result.data.first_name
+            this.last_name = result.data.last_name
+            this.scope = result.data.scopes
+            this.fetchedScopes = true
+            this.loading = false
         }
     },
     methods: {
@@ -124,7 +165,6 @@ export default {
                         console.log(err)
                     });
             } else {
-                this.haeding = 'Update'
                 await UserService.updateUser(this.$route.query.id, data)
                 .then(() => {
                     this.$router.back()

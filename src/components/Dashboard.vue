@@ -3,17 +3,23 @@
     <v-main>
       <v-app-bar
           density="compact"
-          color="deep-purple"
+          color="#79201C"
+          class="d-flex"
       >
         <v-app-bar-nav-icon style="color: white; background: transparent" @click="drawer = !drawer"></v-app-bar-nav-icon>
 
         <v-toolbar-title class="ml-10 title">Dashboard</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn @click="logout">Logout</v-btn>
+        <v-btn class="logout-btn" @click="logout"><v-icon>mdi-logout</v-icon> Logout</v-btn>
       </v-app-bar>
       <v-navigation-drawer
-          v-model="drawer"
+        v-model="drawer"
       >
+        <h4 class="drawer-heading d-flex align-center ">  
+          <v-avatar color="#904B46" class="mr-2">
+            <p style="color:white;" class="py-2">{{ initials }}</p>
+          </v-avatar>
+        {{ name }}</h4>
         <v-list
             nav
             density="compact"
@@ -22,11 +28,15 @@
               active-class="deep-purple--text text--accent-4"
           >
             <template v-for="(route, index) in routes" :key="index">
-              <v-list-item v-if="route.isVisible" :to="route.to">
-                <v-list-item-avatar><v-icon >{{route.icon}}</v-icon></v-list-item-avatar>
-                <v-list-item-title>{{route.title}}</v-list-item-title>
+              <v-list-item color="#717171" active-color="#79201C" v-if="route.isVisible" :to="route.to">
+                <v-list-item-avatar><v-icon size="30">{{route.icon}}</v-icon></v-list-item-avatar>
+                <v-list-item-title class="ml-4" style="font-size:14px">{{route.title}}</v-list-item-title>
               </v-list-item>
             </template>
+            <v-list-item color="#717171" active-color="#79201C" @click="logout">
+              <v-list-item-avatar><v-icon size="30">mdi-logout</v-icon></v-list-item-avatar>
+              <v-list-item-title class="ml-4" style="font-size:14px">Logout</v-list-item-title>
+            </v-list-item>
           </v-list-item-group>
         </v-list>
       </v-navigation-drawer>
@@ -37,17 +47,32 @@
 
 <script>
 
+import {provide} from 'vue'
 
 export default {
   name: 'Dashboard',
   data: () => ({
     drawer: true,
     loading: false,
+    scope: []
   }),
   methods: {
     logout(){
       localStorage.removeItem('token')
+      localStorage.removeItem('auth_user')
       this.$router.push('/auth/sign-in')
+    }
+  },
+  setup(){
+    const scope = JSON.parse(localStorage.getItem('auth_user')).scopes
+    const name = JSON.parse(localStorage.getItem('auth_user')).first_name + ' ' + JSON.parse(localStorage.getItem('auth_user')).last_name
+    var initials = JSON.parse(localStorage.getItem('auth_user')).first_name.substring(0,1) + JSON.parse(localStorage.getItem('auth_user')).last_name.substring(0,1)
+    initials = initials.toUpperCase()
+    provide('scope', scope)
+    return {
+      scope,
+      name,
+      initials
     }
   },
   computed: {
@@ -63,18 +88,30 @@ export default {
           to: '/notifications',
           title: 'Notifications',
           icon: 'mdi-bell',
-          isVisible: true
+          isVisible: this.scope.includes("notification:view")
         },
         {
           to: '/users',
           title: 'Users',
           icon: 'mdi-account-group',
-          isVisible: true
+          isVisible: this.scope.includes("user:view")
         },
+        // {
+        //   to: '/companies',
+        //   title: 'Companies',
+        //   icon: 'mdi-domain',
+        //   isVisible: true
+        // },
         {
           to: '/customers',
           title: 'Customers',
           icon: 'mdi-account-group',
+          isVisible: this.scope.includes("customer:view")
+        },
+        {
+          to: '/campaigns-stats',
+          title: 'Request Stats',
+          icon: 'mdi-file-chart',
           isVisible: true
         },
       ];
@@ -84,30 +121,6 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-.logo
-  display: block
-  margin: 5px auto
-  border-radius: 10px
-
-.route
-  margin: 5px
-  text-align: left
-  overflow: hidden
-  border-radius: 4px
-  font-size: 20px !important
-  font-family: "Roboto", sans-serif
-
-  i
-    font-size: 20px
-
-  &--active i
-    color: inherit
-
-  &--active
-    color: #495db7
-
-.main-bg
-  background: linear-gradient(to bottom, #1976d2 300px, white 300px)
 
 .side-bar
   height: 91vh

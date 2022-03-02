@@ -4,36 +4,45 @@
       color="cyan"
       v-if="loader"
     ></v-progress-linear>
-  <DataTable 
-  :allow_add="true"
-  @addNew="addNew"
-  @update="update"
-  @delete="delete_modal"
-  tableName="Users"
-  :columns="headers" 
-  :dataList="dataList"
-  actions="edit,delete"
-   />
-
-   <v-dialog v-model="deleteModal">
-        <v-card style="padding: 40px">
-            <p class="span-2 form__title mb-0">You Sure, Want to delete this Item</p>
-            <div class="d-flex justify-space-around">
-                <v-btn @click="deleteUser" text-color="white" color="red">Yes</v-btn>
-                <v-btn @click="deleteModal = false" text-color="white" color="green">No</v-btn>
-            </div>
-        </v-card>
-    </v-dialog>
+    <DataTable 
+    :allow_add="scope.includes('user:create')"
+    @addNew="addNew"
+    @update="update"
+    @delete="delete_modal"
+    tableName="Users"
+    :columns="headers" 
+    :dataList="dataList"
+    :actions="actions"
+    />
+    <DeleteModal message="Sure to delete user" v-model="deleteModal" @delete="deleteUser" />
 </template>
 
 <script>
 import DataTable from '@/components/DataTable'
 import UserService from '@/services/UserService'
+import DeleteModal from '@/components/DeleteModal'
+import {inject} from 'vue'
 
 export default {
     name: "Users",
     components:{
-        DataTable
+        DataTable,
+        DeleteModal
+    },
+    setup(){
+        const scope = inject('scope')
+        // console.log("tree", scope)
+        var actions = []
+        if ( scope.includes("user:edit") ) {
+            actions.push("edit")
+        }
+        if ( scope.includes("user:delete") ) {
+            actions.push("delete")
+        }
+        return{
+            scope,
+            actions
+        }
     },
     data(){
         return {
@@ -51,7 +60,6 @@ export default {
             user_id: '',
             loader: true,
             deleteModal: false,
-            actions: ''
         }
     },
     async beforeMount() {

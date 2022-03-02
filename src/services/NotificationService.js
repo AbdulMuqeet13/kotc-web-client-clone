@@ -1,28 +1,19 @@
-import axios from 'axios'
-
-const apiCLient = axios.create({
-    baseURL:'http://192.168.100.212:3000/',
-    withCredentials:false,
-    headers:{
-        Accept: 'application/json',
-        'Content-Type':'application/json'
-    }
-})
+import apiClient from './apiClient' 
 
 export default{
     getNotifications(id){
-        return apiCLient.get('notifications/person/'+id)
+        return apiClient.get('notifications/person/'+id)
     },
     updateNotification(id, data){
-        return apiCLient.patch('notifications/'+id, data)
+        return apiClient.patch('notifications/'+id, data)
     },
     addNotification(data){
-        return apiCLient.post('notifications', data)
+        return apiClient.post('notifications', data)
     },
     getNotification(id){
-        return apiCLient.get('notifications/'+id)
+        return apiClient.get('notifications/'+id)
     },
     deleteNotification(id){
-        return apiCLient.delete('notifications/'+id)
+        return apiClient.delete('notifications/'+id)
     }
 }

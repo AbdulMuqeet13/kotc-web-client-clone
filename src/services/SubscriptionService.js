@@ -1,16 +1,7 @@
-import axios from 'axios'
-
-const apiCLient = axios.create({
-    baseURL:'http://192.168.100.212:3000/',
-    withCredentials:false,
-    headers:{
-        Accept: 'application/json',
-        'Content-Type':'application/json'
-    }
-})
+import apiClient from './apiClient' 
 
 export default {
     extendSubscription(data){
-        return apiCLient.post('stripe/extend-trial',data)
+        return apiClient.post('stripe/extend-trial',data)
     }
 }

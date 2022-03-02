@@ -1,5 +1,6 @@
 .<template>
     <div>
+        <h4 class="mb-5">Select User Scope</h4>
         <div v-for="(item, index) in items" :key="index">
             <div class="d-flex mt-5 justify-start">
                 <v-btn @click="showChildren(index)" elevation="0" class="bg-transparent" size="xx-small"><v-icon>mdi-chevron-down</v-icon></v-btn>
@@ -37,10 +38,30 @@ export default {
             type: Array,
             required: true
         },
-        modelvalue:{
+        modelValue:{
             type: Array,
             default: []
+        },
+        test:{
+            type: Array,
+        },
+        label:{
+            type: String,
+            required: true
         }
+    },
+    async beforeMount() {
+        this.scope = this.modelValue
+        this.items.forEach(item => {
+            this.scope.forEach(scope => {
+                if (scope.includes(item.id)) {
+                    item.checked = true
+                }
+            });
+        });
+    },
+    updated(){
+        this.$emit('update:modelVlaue',this.scope)
     },
     methods: {
         updateAll(index){
