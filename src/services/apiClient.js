@@ -1,7 +1,8 @@
 import axios from 'axios'
 // import router from '../router';
 const apiClient = axios.create({
-    baseURL: 'http://10.20.20.108:3000',
+    baseURL: 'http://192.168.10.90:3000/',
+    // baseURL: 'http://10.20.20.108:3000/',
     timeout: 10000,
     params: {} // do not remove this, its added to add params later in the config
 });

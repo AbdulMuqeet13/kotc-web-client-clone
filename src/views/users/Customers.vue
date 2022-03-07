@@ -21,7 +21,6 @@
                 <p class="span-2 form__title mb-0">Premium Trial</p>
                 <p class="span-2 mb-6">This will set the user's premium status to true till expiry date.</p>
                 <BaseInput v-model="trial_expiry" type="date" label="Expiry Date" :error="errors.trial_expiry" />
-                <!-- <v-text-field v-model="trial_expiry" type="date" label="Expiry Date" outlined dense /> -->
                 <div class="d-flex">
                     <v-spacer></v-spacer>
                     <v-btn
@@ -36,6 +35,8 @@
             </v-card>
         </v-dialog>
     </div>
+    <loading-dialog v-model="loading" message="Fething Data, Please wait..."/>
+    <error-dialog :reload="true" @value="closeError" v-model="error" :error="errorVal"/>
 </template>
 
 <script>
@@ -46,12 +47,16 @@ import {inject} from 'vue'
 import { useField, useForm } from 'vee-validate';
 import {required} from "../../utils/validators";
 import BaseInput from '@/components/BaseInput'
+import LoadingDialog from '@/components/LoadingDialog'
+import ErrorDialog from '@/components/ErrorDialog'
  
 export default {
     name: "Customers",
     components:{
         DataTable,
-        BaseInput
+        BaseInput,
+        ErrorDialog,
+        LoadingDialog
     },
     setup(){
         const schema={
@@ -68,15 +73,20 @@ export default {
 
         const makePremium= handleSubmit(async (v)=>{
             stripe_subscription.date = trial_expiry
-            loader = true
-            
+            loading = true            
             await SubscriptionService.extendSubscription(stripe_subscription)
                 .then(() => {
                     success = true
-                    loader = false
+                    loading = false
                 }).catch((err) => {
-                    loader = false
                     console.log(err)
+                    loading = false
+                    error = true;
+                    errorVal = {
+                        title: 'Network Error',
+                        description: 'Check Your Connection'
+                    };
+
                 });
                 modal = false
             trial_expiry = new Date()
@@ -106,7 +116,10 @@ export default {
             stripe_subscription: {},
             modal: false,
             success: false,
-            loader: true
+            loader: true,
+            error: false,
+            errorVal: {},
+            loading: false
         }        
     },
     methods: {
@@ -134,10 +147,21 @@ export default {
         //     setTimeout(() => {  this.success=false }, 1500);
         // }
     },
-    async mounted() {
-        const response = await UserService.getCustomers() 
-        this.loader=false
-        this.dataList = response.data
+    async beforeMount() {
+        try {
+            const response = await UserService.getCustomers() 
+            this.loader=false
+            this.dataList = response.data
+        } catch (error) {
+            console.log(error)
+            this.error = true;
+            this.errorVal = {
+                title: 'Error while Fetching Data',
+                description: 'Check Your Connection'
+            };
+            this.loader = false
+        }
+        
     }
 
 }

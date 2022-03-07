@@ -12,16 +12,19 @@
     :dataList="dataList"
     actions= "none"
     />
+    <error-dialog :reload="true" @value="closeError" v-model="error" :error="errorVal"/>
 </template>
 
 <script>
 import DataTable from '@/components/DataTable'
 import CampaignService from '@/services/CampaignService'
+import ErrorDialog from '@/components/ErrorDialog'
 
 export default {
     name: 'CampaignStats',
     components: {
         DataTable,
+        ErrorDialog
     },
 
     data() {
@@ -49,20 +52,32 @@ export default {
                 },
             ],
             dataList: [],
-            loader: false
+            loader: false,
+            errorVal:{},
+            error:false
         }
     },
     async beforeMount() {
         this.loader = true
-        let response = await CampaignService.getStats()
-        let data = response.data.sort( (a,b)=> a.scored < b.scored ? 1: -1)
-        data[0].badge = 'mdi-shield-star'
-        data[0].badgeColor = '#EEB609'
-        data[1].badge = 'mdi-shield-star'
-        data[1].badgeColor = '#AFB1AE'
-        console.log("res",data)
-        this.dataList = data
-        this.loader = false
+        try {
+            let response = await CampaignService.getStats()
+            let data = response.data.sort( (a,b)=> a.scored < b.scored ? 1: -1)
+            data[0].badge = 'mdi-shield-star'
+            data[0].badgeColor = '#EEB609'
+            data[1].badge = 'mdi-shield-star'
+            data[1].badgeColor = '#AFB1AE'
+            this.dataList = data
+            this.loader = false
+        } catch (error) {
+            console.log(error)
+            this.error = true;
+            this.errorVal = {
+                title: 'Error while Fetching Data',
+                description: 'Check Your Connection'
+            };
+            this.loader = false
+        }
+        
     },
 
 }

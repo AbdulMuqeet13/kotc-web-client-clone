@@ -1,5 +1,5 @@
 .<template>
-  <v-dialog :value="deleteModal">
+  <v-dialog v-model="modelValue">
         <v-card style="padding: 40px">
             <p class="span-2 form__title mb-0">You Sure, Want to delete this Item</p>
             <div class="d-flex justify-center">
@@ -17,15 +17,11 @@ export default {
             type: String,
             required:true
         },
-        deleteModal:{
-            type: Boolean,
-            default: false
-        },
         modelValue:{
             type: Boolean,
             default: false
         }
-    }
+    },
 
 }
 </script>

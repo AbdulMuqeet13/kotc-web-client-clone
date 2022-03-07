@@ -8,7 +8,7 @@
       >
         <v-app-bar-nav-icon style="color: white; background: transparent" @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-        <v-toolbar-title class="ml-10 title">Dashboard</v-toolbar-title>
+        <v-toolbar-title  class="ml-10 title"><router-link style="color:#fff; text-decoration:none" to="/">Dashboard</router-link></v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn class="logout-btn" @click="logout"><v-icon>mdi-logout</v-icon> Logout</v-btn>
       </v-app-bar>
@@ -16,25 +16,26 @@
         v-model="drawer"
       >
         <h4 class="drawer-heading d-flex align-center ">  
-          <v-avatar color="#904B46" class="mr-2">
-            <p style="color:white;" class="py-2">{{ initials }}</p>
+          <v-avatar size="45" color="#904B46" class="mr-2">
+            <p style="color:white;" class="py-3">{{ initials }}</p>
           </v-avatar>
         {{ name }}</h4>
         <v-list
             nav
             density="compact"
+            class="mt-8"
         >
           <v-list-item-group
               active-class="deep-purple--text text--accent-4"
           >
             <template v-for="(route, index) in routes" :key="index">
               <v-list-item color="#717171" active-color="#79201C" v-if="route.isVisible" :to="route.to">
-                <v-list-item-avatar><v-icon size="30">{{route.icon}}</v-icon></v-list-item-avatar>
+                <v-list-item-avatar><v-icon size="25">{{route.icon}}</v-icon></v-list-item-avatar>
                 <v-list-item-title class="ml-4" style="font-size:14px">{{route.title}}</v-list-item-title>
               </v-list-item>
             </template>
             <v-list-item color="#717171" active-color="#79201C" @click="logout">
-              <v-list-item-avatar><v-icon size="30">mdi-logout</v-icon></v-list-item-avatar>
+              <v-list-item-avatar><v-icon size="25">mdi-logout</v-icon></v-list-item-avatar>
               <v-list-item-title class="ml-4" style="font-size:14px">Logout</v-list-item-title>
             </v-list-item>
           </v-list-item-group>
@@ -64,9 +65,12 @@ export default {
     }
   },
   setup(){
+    // const scope = ['user:view', 'user:create']
     const scope = JSON.parse(localStorage.getItem('auth_user')).scopes
     const name = JSON.parse(localStorage.getItem('auth_user')).first_name + ' ' + JSON.parse(localStorage.getItem('auth_user')).last_name
+    // const name = 'Test User'
     var initials = JSON.parse(localStorage.getItem('auth_user')).first_name.substring(0,1) + JSON.parse(localStorage.getItem('auth_user')).last_name.substring(0,1)
+    // var initials = 'TU'
     initials = initials.toUpperCase()
     provide('scope', scope)
     return {
@@ -112,7 +116,7 @@ export default {
           to: '/campaigns-stats',
           title: 'Request Stats',
           icon: 'mdi-file-chart',
-          isVisible: true
+          isVisible: this.scope.includes("request:view")
         },
       ];
     }

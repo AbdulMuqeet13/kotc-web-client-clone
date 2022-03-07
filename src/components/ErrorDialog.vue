@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :value="flag" @input="$emit('value', false)">
+  <v-dialog v-model="flag" @input="$emit('value', false)">
     <v-card style="padding: 10px 0">
       <v-card-title style="font-family: google-sans, sans-serif; font-size: 24px">
         {{ error.title }}
@@ -9,7 +9,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer/>
-        <v-btn color="primary" elevation="0" @click="$emit('value', false)">Ok</v-btn>
+        <v-btn v-if="reload" class="btn-primary" elevation="0" @click="this.$router.go()">Reload</v-btn>
+        <v-btn v-else class="btn-primary" elevation="0" @click="$emit('update:modelValue', false)">Ok</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -33,6 +34,10 @@ export default {
     error: {
       type: Object,
       default: () => ({})
+    },
+    reload: {
+      type: Boolean,
+      default: false
     }
   }
 }

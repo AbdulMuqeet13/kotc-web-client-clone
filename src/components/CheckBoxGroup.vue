@@ -30,6 +30,9 @@ export default {
             values: []
         }
     },
+    mounted() {
+        this.values = this.modelValue
+    },
 }
 </script>
 

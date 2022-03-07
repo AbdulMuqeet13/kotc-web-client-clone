@@ -6,7 +6,7 @@
           <v-spacer></v-spacer>
           <v-btn v-if="allow_add" @click="this.$emit('addNew')" color="#904B46" text-color="white" type="button"> Add New {{ tableName }} </v-btn>
         </div>
-    <v-table class="px-5" fixed-header height="80vh">
+    <v-table class="px-5" fixed-header :height="height">
         <thead>
           <tr>
             <th v-if="badge">Badge</th>
@@ -17,7 +17,14 @@
         <tbody>
           <tr v-for="(data, index) in list" :key="index">
             <td v-if="badge"><v-icon size="30" v-if="data.badge" :color="data.badgeColor">{{ data.badge }}</v-icon></td>
-            <td v-for="(head, index) in columns" :key="index">{{ data[head.value] }}</td>
+            <template v-for="(head, index) in columns" :key="index">
+              <td v-if="typeof data[head.value] === 'boolean'" >
+                <v-checkbox @click.prevent v-model="data[head.value]"></v-checkbox>
+              </td>
+              <td v-else>
+                {{ data[head.value] }}
+              </td>
+            </template>
             <td>
               <div class="d-flex">
                 <v-spacer></v-spacer>
@@ -36,9 +43,13 @@
 </template>
 
 <script>
+import BaseCheckbox from '@/components/BaseCheckbox'
 
 export default {
   name: 'Datatable',
+  components:{
+    BaseCheckbox
+  },
   props: {
       columns: {
           type: Array,
@@ -63,7 +74,16 @@ export default {
       badge: {
         Type: Array,
         default: false 
+      },
+      height:{
+        type: String,
+        default: '80vh'
       }
+  },
+  data() {
+    return {
+      cell_id: 0
+    }
   },
   computed: {
       list(){
@@ -71,9 +91,6 @@ export default {
           return list
       }
   },
-  methods:{
-
-  }
 }
 </script>
 
@@ -92,5 +109,7 @@ export default {
   line-height: 2rem;
   word-break: break-all;
 }
-
+input[type="checkbox"]:disabled{
+  background: black !important;
+}
 </style>

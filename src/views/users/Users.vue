@@ -15,19 +15,22 @@
     :actions="actions"
     />
     <DeleteModal message="Sure to delete user" v-model="deleteModal" @delete="deleteUser" />
+    <error-dialog :reload="true" @value="closeError" v-model="error" :error="errorVal"/>
 </template>
 
 <script>
 import DataTable from '@/components/DataTable'
 import UserService from '@/services/UserService'
 import DeleteModal from '@/components/DeleteModal'
+import ErrorDialog from '@/components/ErrorDialog'
 import {inject} from 'vue'
 
 export default {
     name: "Users",
     components:{
         DataTable,
-        DeleteModal
+        DeleteModal,
+        ErrorDialog
     },
     setup(){
         const scope = inject('scope')
@@ -60,12 +63,25 @@ export default {
             user_id: '',
             loader: true,
             deleteModal: false,
+            errorVal: {},
+            error: false
         }
     },
     async beforeMount() {
-        const response = await UserService.getUsers()
-        this.dataList = response.data
-        this.loader = false
+        try {
+            const response = await UserService.getUsers()
+            this.dataList = response.data
+            this.loader = false    
+        } catch (error) {
+            console.log(error)
+            this.error = true;
+            this.errorVal = {
+                title: 'Error while Fetching Data',
+                description: 'Check Your Connection'
+            };
+            this.loader = false
+        }
+        
     },
     methods: {
         addNew() {

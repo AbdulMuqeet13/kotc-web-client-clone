@@ -67,15 +67,15 @@ export default {
         updateAll(index){
                 if(this.items[index].checked){
                     this.items[index].children.forEach(child => {
-                        if (!this.scope.includes(this.items[index].name.toLowerCase()+ ':' +child.toLowerCase())) {
-                            this.scope.push(this.items[index].name.toLowerCase()+ ':' +child.toLowerCase())   
+                        if (!this.scope.includes(this.items[index].id.toLowerCase()+ ':' +child.toLowerCase())) {
+                            this.scope.push(this.items[index].id.toLowerCase()+ ':' +child.toLowerCase())   
                         }
                     });
                 }
                 else{
                     this.items[index].children.forEach(child => {
-                        if (this.scope.includes( this.items[index].name.toLowerCase()+ ':' +child.toLowerCase() ) ) {
-                            this.scope.splice( this.scope.indexOf( this.items[index].name.toLowerCase()+ ':' +child.toLowerCase() ), 1)
+                        if (this.scope.includes( this.items[index].id.toLowerCase()+ ':' +child.toLowerCase() ) ) {
+                            this.scope.splice( this.scope.indexOf( this.items[index].id.toLowerCase()+ ':' +child.toLowerCase() ), 1)
                         }
                     });
                 }

@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3 text-start">
     <label v-if="showLabel" :class="{errorLabel:(error.length>0)}">{{label}}</label>
-    <input :type="type" :value="modelValue" :placeholder="label" @input="$emit('update:modelValue',$event.target.value)" :class="{error:(error.length>0)}"/>
+    <input v-bind="$attrs" :type="type" :value="modelValue" :placeholder="label" @input="$emit('update:modelValue',$event.target.value)" :class="{error:(error.length>0)}"/>
     <p v-if="error.length>0">{{error}}</p>
   </div>
 </template>

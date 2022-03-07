@@ -4,8 +4,12 @@
         <v-form @submit.prevent="UpdateUser">
         <p class="span-2 form__title mb-0">{{ haeding }} User</p>
         <div class="d-flex justify-space-between">
-            <BaseInput v-model="first_name" label="First Name" style="width: 49%" :error="errors.first_name"/>
-            <BaseInput v-model="last_name" label="Last Name" style="width: 49%" :error="errors.last_name"/>
+            <div style="width: 49%">
+                <BaseInput v-model="first_name" label="First Name" :error="errors.first_name"/>
+            </div>
+            <div style="width: 49%">
+                <BaseInput v-model="last_name" label="Last Name" :error="errors.last_name"/>
+            </div>
         </div>
         <BaseInput v-model="username" label="Email" :error="errors.username"/>
         <BaseInput v-model="password" type="password" label="Password" :error="errors.password"/>
@@ -25,6 +29,7 @@
         </v-form>
     </v-card>
     <loading-dialog v-model="loading" message="Fething Data, Please wait..."/>
+    <error-dialog :reload="reload" @value="closeError" v-model="error" :error="errorVal"/>
     </div>
 </template>
 
@@ -35,13 +40,15 @@ import LoadingDialog from '@/components/LoadingDialog'
 import { useField, useForm } from 'vee-validate'
 import {required, email} from "../../utils/validators"
 import TreeView from '@/components/TreeView'
+import ErrorDialog from '@/components/ErrorDialog'
 
 export default {
     name: "UserForm",
     components:{
         BaseInput,
         TreeView,
-        LoadingDialog
+        LoadingDialog,
+        ErrorDialog
     },
     data() {
         return{
@@ -105,7 +112,10 @@ export default {
                 },
             ],
             loading: false,
-            fetchedScopes: false
+            fetchedScopes: false,
+            error: false,
+            errorVal: {},
+            reload: true
         }
     },
     setup(){
@@ -137,6 +147,12 @@ export default {
             var result = await UserService.getUser(this.$route.query.id)
                 .catch((err) => {
                     console.log(err)
+                    this.error = true;
+                    this.errorVal = {
+                        title: 'Error while Fetching Data',
+                        description: 'Check Your Connection'
+                    };
+                    this.loader = false
                 });
             this.username = result.data.username
             this.password = result.data.password
@@ -149,20 +165,28 @@ export default {
     },
     methods: {
         async UpdateUser(){
+            
             var data = new Object()
             data.username = this.username
             data.first_name = this.first_name
             data.last_name = this.last_name
             data.password = this.password
             data.scopes = this.scope
+            this.loading = true
             if (!this.$route.query.id) {
-                console.log(data)
                 await UserService.addUser(data)
                     .then((res) => {
                         console.log(res)
                         this.$router.back()
                     }).catch((err) => {
                         console.log(err)
+                        this.loading = false
+                        this.error = true
+                        this.reload = false
+                        this.errorVal = {
+                            title: 'Network Error',
+                            description: 'Check Your Connection'
+                        };
                     });
             } else {
                 await UserService.updateUser(this.$route.query.id, data)
@@ -170,6 +194,13 @@ export default {
                     this.$router.back()
                 }).catch((err) => {
                     console.log(err)
+                    this.loading = false
+                    this.error = true
+                    this.reload = false
+                    this.errorVal = {
+                        title: 'Network Error',
+                        description: 'Check Your Connection'
+                    };
                 });
             }
             setTimeout(() => {  this.success=false }, 2000);

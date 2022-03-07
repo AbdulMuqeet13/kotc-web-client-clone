@@ -14,20 +14,23 @@
     :dataList="dataList"
     :actions="actions"
     />
-    <DeleteModal message="Sure to delete notification" v-model="deleteModal" @delete="deleteNotification" />
+    <DeleteModal v-if="deleteModal" message="Sure to delete notification" v-model="deleteModal" @delete="deleteNotification" />
+    <error-dialog :reload="true" @value="closeError" v-model="error" :error="errorVal"/>
 </template>
 
 <script>
 import DataTable from '@/components/DataTable'
 import NotificationService from '@/services/NotificationService'
 import DeleteModal from '@/components/DeleteModal'
+import ErrorDialog from '@/components/ErrorDialog'
 import {inject} from 'vue'
 
 export default {
     name: "Notifications",
     components:{
         DataTable,
-        DeleteModal
+        DeleteModal,
+        ErrorDialog
     },
     setup(){
         const scope = inject('scope')
@@ -63,12 +66,24 @@ export default {
             modal: false,
             deleteModal: false,
             loader: true,
+            errorVal: {},
+            error: false
         }
     },
     async mounted() {
-        const response = await NotificationService.getNotifications(this.user_id) 
-        this.loader=false
-        this.dataList = response.data
+        try {
+            const response = await NotificationService.getNotifications(this.user_id) 
+            this.loader=false
+            this.dataList = response.data
+        } catch (error) {
+            this.error = true;
+            this.errorVal = {
+                title: 'Error while Fetching Data',
+                description: 'Check Your Connection'
+            };
+            this.loader = false
+        }
+        
     },
     methods:{
         addNew(){
