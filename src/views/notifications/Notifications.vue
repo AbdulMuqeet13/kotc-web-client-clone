@@ -8,6 +8,10 @@
     @delete="delete_modal" 
     @addNew="addNew"
     @update="update"
+    @search="search"
+    @pageNum="updatePageNum"
+    @updateCurrentPage="updatePageNum"
+    :pages="pages"
     :allow_add="scope.includes('notification:create')"
     tableName="Notifications"
     :columns="headers"
@@ -67,12 +71,15 @@ export default {
             deleteModal: false,
             loader: true,
             errorVal: {},
-            error: false
+            error: false,
+            page: 1,
+            pages: 1,
         }
     },
     async mounted() {
         try {
-            const response = await NotificationService.getNotifications(this.user_id) 
+            let page = 1
+            const response = await NotificationService.getNotifications(this.user_id, page) 
             this.loader=false
             this.dataList = response.data
         } catch (error) {
@@ -110,9 +117,45 @@ export default {
                 });
             this.deleteModal=false
             this.loader = false
+        },
+        async search(e){
+            this.loader = true
+            var data= {}
+            data.title = e
+            data.page = this.page
+            // console.log(data)
+            await NotificationService.search(data)
+                .then((response)=>{
+                    this.dataList = response.data
+                    this.loader = false
+                }).catch((err)=>{
+                    console.log(err)
+                    this.error = true;
+                    this.errorVal = {
+                        title: 'Error while Fetching Data',
+                        description: 'Check Your Connection'
+                    };
+                    this.loader = false
+                })
+        },
+        async updatePageNum(e){
+            this.page = e
+            try {
+                const response = await NotificationService.getNotifications(this.page)
+                this.dataList = response.data.notifications
+                this.pages = response.data.total_pages
+                this.loader = false    
+            } catch (error) {
+                console.log(error)
+                this.error = true;
+                this.errorVal = {
+                    title: 'Error while Fetching Data',
+                    description: 'Check Your Connection'
+                };
+                this.loader = false
+            }
         }
     }
-
 }
 </script>
 

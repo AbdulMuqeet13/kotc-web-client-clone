@@ -1,7 +1,7 @@
 .<template>
     <div class="d-flex justify-center my-15" >
         <v-card style="padding: 40px" elevation="5" width="50vw">
-        <v-form @submit.prevent="UpdateUser">
+        <v-form @submit.prevent="submit">
         <p class="span-2 form__title mb-0">{{ haeding }} User</p>
         <div class="d-flex justify-space-between">
             <div style="width: 49%">
@@ -12,7 +12,7 @@
             </div>
         </div>
         <BaseInput v-model="username" label="Email" :error="errors.username"/>
-        <BaseInput v-model="password" type="password" label="Password" :error="errors.password"/>
+        <BaseInput v-model="password" icon="mdi-eye" @iconClick="togglePassword" :type="passwordType" label="Password" :error="errors.password"/>
         <p class="message">If don't need to update password, Leave it Blank</p>
         <div class="mt-5">
             <TreeView label="Select User Scope" v-if="fetchedScopes"  :items="items" v-model="scope"/>
@@ -38,9 +38,11 @@ import UserService from '@/services/UserService'
 import BaseInput from '@/components/BaseInput'
 import LoadingDialog from '@/components/LoadingDialog'
 import { useField, useForm } from 'vee-validate'
-import {required, email} from "../../utils/validators"
+import {required, string, email} from "../../utils/validators"
 import TreeView from '@/components/TreeView'
 import ErrorDialog from '@/components/ErrorDialog'
+import { useRoute, useRouter } from 'vue-router'
+import {ref} from 'vue'
 
 export default {
     name: "UserForm",
@@ -53,7 +55,6 @@ export default {
     data() {
         return{
             haeding: 'Create New',
-            scope: [],
             items: [
                 {
                     id: 'notification',
@@ -111,11 +112,16 @@ export default {
                     ]
                 },
             ],
-            loading: false,
-            fetchedScopes: false,
-            error: false,
-            errorVal: {},
-            reload: true
+            passwordType: 'password'
+        }
+    },
+    methods: {
+        togglePassword(){
+            if (this.passwordType === 'password') {
+                this.passwordType = 'text'
+                return
+            }
+            this.passwordType = 'password'
         }
     },
     setup(){
@@ -123,17 +129,74 @@ export default {
             username: email,
             first_name: required,
             last_name: required,
+            password: string,
+            scope: required
         }
-        const {errors}=useForm({validationSchema:schema})
+        const route = useRoute()
+        const router = useRouter()
+        const {handleSubmit, errors}=useForm({validationSchema:schema})
         const {value:username}=useField('username')
         const {value:first_name}=useField('first_name')
         const {value:last_name}=useField('last_name')
-
+        const {value:password}=useField('password')
+        const {value:scope}=useField('scope')
+        let loading = ref(false)
+        let error = ref(false)
+        let errorVal = ref({})
+        let fetchedScopes = ref(false)
+        let reload = ref(true)
+        const submit = handleSubmit(async values=>{
+            var data = {}
+            data.username = values.username
+            data.first_name = values.first_name
+            data.last_name = values.last_name
+            data.password = values.password
+            data.scopes = values.scope
+            loading = true
+            console.log(loading)
+            if (!route.query.id) {
+                await UserService.addUser(data)
+                    .then(() => {
+                        router.back()
+                    }).catch((err) => {
+                        console.log(err)
+                        loading = false
+                        error = true
+                        reload = false
+                        errorVal = {
+                            title: 'Network Error',
+                            description: 'Check Your Connection'
+                        };
+                    });
+            } else {
+                await UserService.updateUser(route.query.id, data)
+                .then(() => {
+                    router.back()
+                }).catch((err) => {
+                    console.log(err)
+                    loading = false
+                    error = true
+                    reload = false
+                    errorVal = {
+                        title: 'Network Error',
+                        description: 'Check Your Connection'
+                    };
+                });
+            }
+        })
         return {
             username,
             first_name,
+            password,
             last_name,
             errors,
+            scope,
+            error,
+            errorVal,
+            loading,
+            submit,
+            fetchedScopes,
+            reload
         }
     },
     async beforeMount() {
@@ -163,49 +226,6 @@ export default {
             this.loading = false
         }
     },
-    methods: {
-        async UpdateUser(){
-            
-            var data = new Object()
-            data.username = this.username
-            data.first_name = this.first_name
-            data.last_name = this.last_name
-            data.password = this.password
-            data.scopes = this.scope
-            this.loading = true
-            if (!this.$route.query.id) {
-                await UserService.addUser(data)
-                    .then((res) => {
-                        console.log(res)
-                        this.$router.back()
-                    }).catch((err) => {
-                        console.log(err)
-                        this.loading = false
-                        this.error = true
-                        this.reload = false
-                        this.errorVal = {
-                            title: 'Network Error',
-                            description: 'Check Your Connection'
-                        };
-                    });
-            } else {
-                await UserService.updateUser(this.$route.query.id, data)
-                .then(() => {
-                    this.$router.back()
-                }).catch((err) => {
-                    console.log(err)
-                    this.loading = false
-                    this.error = true
-                    this.reload = false
-                    this.errorVal = {
-                        title: 'Network Error',
-                        description: 'Check Your Connection'
-                    };
-                });
-            }
-            setTimeout(() => {  this.success=false }, 2000);
-        },
-    }
 }
 </script>
 

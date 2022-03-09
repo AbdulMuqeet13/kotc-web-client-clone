@@ -8,11 +8,15 @@
     :allow_add="scope.includes('user:create')"
     @addNew="addNew"
     @update="update"
+    @search="search"
     @delete="delete_modal"
+    @pageNum="updatePageNum"
+    @updateCurrentPage="updatePageNum"
     tableName="Users"
     :columns="headers" 
     :dataList="dataList"
     :actions="actions"
+    :pages="pages"
     />
     <DeleteModal message="Sure to delete user" v-model="deleteModal" @delete="deleteUser" />
     <error-dialog :reload="true" @value="closeError" v-model="error" :error="errorVal"/>
@@ -64,13 +68,17 @@ export default {
             loader: true,
             deleteModal: false,
             errorVal: {},
-            error: false
+            error: false,
+            pages: 1,
+            page: 1
         }
     },
     async beforeMount() {
         try {
-            const response = await UserService.getUsers()
-            this.dataList = response.data
+            let page = 1
+            const response = await UserService.getUsers(page)
+            this.dataList = response.data.users
+            this.pages = response.data.total_pages
             this.loader = false    
         } catch (error) {
             console.log(error)
@@ -108,6 +116,43 @@ export default {
                 });
             this.deleteModal=false
             this.loader = false
+        },
+        async search(e){
+            this.loader = true
+            let data = {}
+            data.name = e
+            data.page = this.page
+            await UserService.searchUser(data)
+                .then((response)=>{
+                    console.log('iuahNA',response)
+                    this.dataList = response.data.users
+                    this.loader = false
+                }).catch((err)=>{
+                    console.log(err)
+                    this.error = true;
+                    this.errorVal = {
+                        title: 'Error while Fetching Data',
+                        description: 'Check Your Connection'
+                    };
+                    this.loader = false
+            })
+        },
+        async updatePageNum(e){
+            this.page = e
+            try {
+                const response = await UserService.getUsers(this.page)
+                this.dataList = response.data.users
+                this.pages = response.data.total_pages
+                this.loader = false    
+            } catch (error) {
+                console.log(error)
+                this.error = true;
+                this.errorVal = {
+                    title: 'Error while Fetching Data',
+                    description: 'Check Your Connection'
+                };
+                this.loader = false
+            }
         }
     }
 

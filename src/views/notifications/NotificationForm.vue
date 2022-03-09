@@ -1,36 +1,22 @@
 .<template>
-    <div class="d-flex justify-center my-15" >
-        <v-card style="padding: 40px" elevation="5" width="50vw">
-        <v-form @submit.prevent="UpdateNotification">
-        <p class="span-2 form__title mb-0">Notification</p>
-        <BaseInput v-model="title" label="Title" :error="errors.title"/>
-        <BaseTextArea v-model="message" label="Message" :error="errors.message"/>
-        <CheckBoxGroup v-if="fetchPlatform" label="Select Platform" v-model="platform" :items="items" />
-        <div class="d-flex flex-wrap justify-end mt-8">
-            <v-btn
-                elevation="0"
-                color="black"
-                class="ml-2 mt-2"
-                variant="outlined"
-            >Send Only</v-btn>
-            <v-btn
-                elevation="0"
-                class="ml-2 mt-2"
-                color="#904B46"
-                variant="outlined"
-            >Send and Save</v-btn>
-            <v-btn
-                elevation="0"
-                type="Submit"
-                class=" ml-2 mt-2 btn-primary"
-            >Submit
-            </v-btn>
-        </div>
+<div class="d-flex justify-center my-15">
+    <v-card style="padding: 40px" elevation="5" width="50vw">
+        <v-form @submit.prevent="submit">
+            <p class="span-2 form__title mb-0">Notification</p>
+            <BaseInput v-model="title" label="Title" :error="errors.title" />
+            <BaseTextArea v-model="message" label="Message" :error="errors.message" />
+            <CheckBoxGroup v-if="fetchPlatform" label="Select Platform" v-model="platform" :items="items" />
+            <div class="d-flex flex-wrap justify-end mt-8">
+                <v-btn elevation="0" color="black" class="ml-2 mt-2" variant="outlined">Send Only</v-btn>
+                <v-btn elevation="0" class="ml-2 mt-2" color="#904B46" variant="outlined">Send and Save</v-btn>
+                <v-btn elevation="0" type="Submit" class=" ml-2 mt-2 btn-primary">Submit
+                </v-btn>
+            </div>
         </v-form>
     </v-card>
-    <loading-dialog v-model="loading" message="Fething Data, Please wait..."/>
-    <error-dialog :reload="reload" @value="closeError" v-model="error" :error="errorVal"/>
-    </div>
+    <loading-dialog v-model="loading" message="Fething Data, Please wait..." />
+    <error-dialog :reload="reload" @value="closeError" v-model="error" :error="errorVal" />
+</div>
 </template>
 
 <script>
@@ -39,12 +25,20 @@ import BaseInput from '@/components/BaseInput'
 import BaseTextArea from '@/components/BaseTextArea'
 import CheckBoxGroup from '@/components/CheckBoxGroup'
 import LoadingDialog from '@/components/LoadingDialog'
-import { useField, useForm } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router'
+import {ref} from 'vue'
+import {
+    useField,
+    useForm
+} from 'vee-validate';
 import ErrorDialog from '@/components/ErrorDialog'
-import {required} from "../../utils/validators";
+import {
+    required,
+    string
+} from "../../utils/validators";
 export default {
     name: "NotificationForm",
-    components:{
+    components: {
         BaseInput,
         BaseTextArea,
         CheckBoxGroup,
@@ -53,10 +47,7 @@ export default {
     },
     data() {
         return {
-            user_id: JSON.parse(localStorage.getItem('auth_user'))._id,
-            platform: [],
-            items:[
-                {
+            items: [{
                     label: 'For Android',
                     value: 'android'
                 },
@@ -65,43 +56,88 @@ export default {
                     value: 'ios'
                 }
             ],
-            loading: false,
-            fetchPlatform: false,
-            notification_id: '',
-            error: false,
-            errorVal:{},
-            reload: false
         }
     },
-    setup(){
-        const schema={
+    setup() {
+        const route = useRoute()
+        const router = useRouter()
+        const schema = {
             title: required,
-            message: required
+            message: required,
+            platform: string
         }
-        const {errors}=useForm({validationSchema:schema})
-        const {value:title}=useField('title')
-        const {value:message}=useField('message')
-
+        const {handleSubmit,errors} = useForm({
+            validationSchema: schema
+        })
+        const {value: title} = useField('title')
+        const {value: message} = useField('message')
+        const {value: platform} = useField('platform')
+        let loading = ref(false)
+        let error = ref(false)
+        let errorVal = ref({})
+        let fetchPlatform = ref(false)
+        let reload = ref(true)
+        const user_id = JSON.parse(localStorage.getItem('auth_user'))._id
+        const submit = handleSubmit(async values => {
+            var data = new Object
+            data.title = values.title
+            data.message = values.message
+            data.user_id = user_id
+            data.platform = values.platform
+            loading = true
+            if (!route.query.id) {
+                await NotificationService.addNotification(data)
+                    .then(() => {
+                        router.back()
+                    }).catch((err) => {
+                        console.log(err)
+                        loading = false
+                        error = true
+                        errorVal = {
+                            title: 'Network Error',
+                            description: 'Check Your Connection'
+                        };
+                    });
+            } else {
+                await NotificationService.updateNotification(route.query.id, data)
+                    .then(() => {
+                        router.back()
+                    }).catch((err) => {
+                        console.log(err)
+                        loading = false
+                        error = true
+                        errorVal = {
+                            title: 'Network Error',
+                            description: 'Check Your Connection'
+                        };
+                    });
+            }
+        })
         return {
-            
+
             errors,
             title,
-            message
+            message,
+            platform,
+            error,
+            errorVal,
+            loading,
+            submit,
+            fetchPlatform,
+            reload,
         }
     },
     async beforeMount() {
         if (!this.$route.query.id) {
             this.fetchPlatform = true
             return
-        }
-        else{
+        } else {
             this.loading = true
-            this.notification_id = this.$route.query.id
             await NotificationService.getNotification(this.$route.query.id)
                 .then((result) => {
                     this.title = result.data.title
                     this.message = result.data.message
-                    this.platform = result.data.platform 
+                    this.platform = result.data.platform
                     this.fetchPlatform = true
                 }).catch((err) => {
                     console.log(err)
@@ -115,49 +151,6 @@ export default {
             this.loading = false
         }
     },
-    methods: {
-        async UpdateNotification(){
-            this.loader = true
-            var data = new Object
-            data.title = this.title
-            data.message = this.message
-            data.user_id = this.user_id 
-            data.platform = this.platform
-            this.loading = true
-            if (!this.$route.query.id) {
-                await NotificationService.addNotification(data)
-                    .then(() => {
-                        this.modal = false
-                        this.success = true
-                        this.loader = false
-                        this.$router.back()
-                    }).catch((err) => {
-                        console.log(err)
-                        this.loading = false
-                        this.error = true
-                        this.errorVal = {
-                            title: 'Network Error',
-                            description: 'Check Your Connection'
-                        };
-                    });
-            } else {
-                console.log(this.notification_id, data)
-                await NotificationService.updateNotification(this.notification_id, data)
-                .then(() => {
-                    this.$router.back()
-                }).catch((err) => {
-                    console.log(err)
-                    this.loading = false
-                    this.error = true
-                    this.errorVal = {
-                        title: 'Network Error',
-                        description: 'Check Your Connection'
-                    };
-                });
-            }
-            setTimeout(() => {  this.success=false }, 2000);
-        },
-    }
 }
 </script>
 

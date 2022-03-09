@@ -11,7 +11,11 @@
         :columns="headers"
         :dataList="dataList"
         :actions="actions"
+        :pages="pages"
+        @search="search"
         @view_details="showCompanies"
+        @pageNum="updatePageNum"
+        @updateCurrentPage="updatePageNum"
      />
     
     <div class="d-flex justify-center">
@@ -119,7 +123,9 @@ export default {
             loader: true,
             error: false,
             errorVal: {},
-            loading: false
+            loading: false,
+            pages: 1,
+            page: 1 
         }        
     },
     methods: {
@@ -129,29 +135,51 @@ export default {
         },
         async showCompanies(e){
             this.$router.push(`/companies?id=${e._id}`)
+        },
+        async search(e){
+            this.loader = true
+            let data = {}
+            data.name = e
+            data.page = this.page
+            await UserService.searchCustomer(data)
+                .then((response)=>{
+                    this.dataList = response.data
+                    this.loader = false
+                }).catch((err)=>{
+                    console.log(err)
+                    this.error = true;
+                    this.errorVal = {
+                        title: 'Error while Fetching Data',
+                        description: 'Check Your Connection'
+                    };
+                    this.loader = false
+            })
+        },
+        async updatePageNum(e){
+            this.page = e
+            try {
+                const response = await UserService.getCustomers(this.page)
+                this.dataList = response.data.users
+                this.pages = response.data.total_pages
+                this.loader = false    
+            } catch (error) {
+                console.log(error)
+                this.error = true;
+                this.errorVal = {
+                    title: 'Error while Fetching Data',
+                    description: 'Check Your Connection'
+                };
+                this.loader = false
+            }
         }
-        // async makePremium(){
-        //     this.stripe_subscription.date = this.trial_expiry
-        //     this.loader = true
-            
-        //     await SubscriptionService.extendSubscription(this.stripe_subscription)
-        //         .then(() => {
-        //             this.success = true
-        //             this.loader = false
-        //         }).catch((err) => {
-        //             this.loader = false
-        //             console.log(err)
-        //         });
-        //         this.modal = false
-        //     this.trial_expiry = new Date()
-        //     setTimeout(() => {  this.success=false }, 1500);
-        // }
     },
     async beforeMount() {
         try {
-            const response = await UserService.getCustomers() 
+            let page = 1
+            const response = await UserService.getCustomers(page) 
             this.loader=false
-            this.dataList = response.data
+            this.dataList = response.data.customers
+            this.pages = response.data.total_pages
         } catch (error) {
             console.log(error)
             this.error = true;

@@ -11,6 +11,7 @@
     :columns="headers" 
     :dataList="dataList"
     actions= "none"
+    :showSearch="false"
     />
     <error-dialog :reload="true" @value="closeError" v-model="error" :error="errorVal"/>
 </template>

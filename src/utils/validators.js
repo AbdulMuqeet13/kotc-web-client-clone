@@ -36,6 +36,9 @@ export const email= value =>{
     return true
 }
 
+export const string = ()=>{
+    return true
+}
 // export function answerValidator(type) {
 //     if (type === 'bool') {
 //         return (v) => (v && (v === 'true' || v === 'false')) || 'Answer should be the true or false.';

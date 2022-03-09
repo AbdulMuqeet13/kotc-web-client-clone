@@ -6,7 +6,7 @@
     ></v-progress-linear>
     <DataTable 
     :allow_add="false"
-    :tableName="'Comapanies of '+ username"
+    :tableName="'Locations of '+ username"
     :columns="headers" 
     :dataList="dataList"
     actions="view_details"
