@@ -80,8 +80,9 @@ export default {
         try {
             let page = 1
             const response = await NotificationService.getNotifications(this.user_id, page) 
+            console.log(response.data)
             this.loader=false
-            this.dataList = response.data
+            this.dataList = response.data.notifications
         } catch (error) {
             this.error = true;
             this.errorVal = {
@@ -122,11 +123,13 @@ export default {
             this.loader = true
             var data= {}
             data.title = e
+            data.user_id = this.user_id
             data.page = this.page
             // console.log(data)
             await NotificationService.search(data)
                 .then((response)=>{
-                    this.dataList = response.data
+                    
+                    this.dataList = response.data.notifications
                     this.loader = false
                 }).catch((err)=>{
                     console.log(err)
@@ -141,7 +144,7 @@ export default {
         async updatePageNum(e){
             this.page = e
             try {
-                const response = await NotificationService.getNotifications(this.page)
+                const response = await NotificationService.getNotifications(this.user_id,this.page)
                 this.dataList = response.data.notifications
                 this.pages = response.data.total_pages
                 this.loader = false    

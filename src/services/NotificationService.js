@@ -2,7 +2,7 @@ import apiClient from './apiClient'
 
 export default{
     getNotifications(id,page){
-        return apiClient.get('notification-templates/person/'+id)
+        return apiClient.get('notification-templates/person/'+id+'/'+page)
     },
     updateNotification(id, data){
         return apiClient.patch('notification-templates/'+id, data)
